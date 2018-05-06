@@ -17,9 +17,9 @@ if not os.path.isfile(file):
 caching=0
 
 # Check if we might have the -c flag
-if sys.argc>3:
+if len(sys.argv)>3:
     if sys.argv[3].startswith("-c"):
-        if sys.argc>4:
+        if len(sys.argv)>4:
             caching = int(sys.argv[4])
         else:
             caching = 3600 # One hour caching by default
