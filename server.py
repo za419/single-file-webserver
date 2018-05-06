@@ -232,7 +232,7 @@ def basicHeaders(status, contentType):
 
     # Add cache-control header iff we have caching set
     if caching>0:
-        out+="Cache-Control: public, max-age="+caching+"\r\n"
+        out+="Cache-Control: public, max-age="+str(caching)+"\r\n"
 
     out += "Content-Type: "+contentType+"\r\n"
     return out
