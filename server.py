@@ -14,6 +14,18 @@ if not os.path.isfile(file):
     print "Error: File "+file+" not found."
     sys.exit(127)
 
+caching=0
+
+# Check if we might have the -c flag
+if sys.argc>3:
+    if sys.argv[3].startswith("-c"):
+        if sys.argc>4:
+            caching = int(sys.argv[4])
+        else:
+            caching = 3600 # One hour caching by default
+    else:
+        print "Warning: Did not understand argument "+sys.argv[3]
+
 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
 sock.bind(("", port))
