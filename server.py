@@ -14,8 +14,6 @@ if not os.path.isfile(file):
     print "Error: File "+file+" not found."
     sys.exit(127)
 
-file = open(file, 'r', 0)
-
 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
 sock.bind(("", port))
@@ -262,6 +260,8 @@ class Connection:
         return self.conn.fileno()
 
 openconn = []
+type = mimeTypeOf(file)
+file = open(file, 'r', 0)
 
 # Infinite loop to serve connections
 while True:
@@ -304,3 +304,5 @@ while True:
                 read.conn.close()
                 openconn.remove(read.conn)
                 continue
+            
+            
