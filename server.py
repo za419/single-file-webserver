@@ -229,6 +229,11 @@ def basicHeaders(status, contentType):
     out += "Date: "+time.strftime("%a, %d %b %Y %H:%M:%S GMT", time.gmtime())+"\r\n"
     out += "Server: Single file server (Python)\r\n"
     out += "Connection: close\r\n"
+
+    # Add cache-control header iff we have caching set
+    if caching>0:
+        out+="Cache-Control: public, max-age="+caching+"\r\n"
+
     out += "Content-Type: "+contentType+"\r\n"
     return out
 
