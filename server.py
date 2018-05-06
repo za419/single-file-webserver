@@ -225,7 +225,7 @@ def mimeTypeOf (filename):
 def basicHeaders(status, contentType):
     "Constructs and returns a basic set of headers for a response (Does not end the header block)"
 
-    out =  "HTTP/1.0 "+status+"\r\n"
+    out =  "HTTP/1.1 "+status+"\r\n"
     out += "Date: "+time.strftime("%a, %d %b %Y %H:%M:%S GMT", time.gmtime())+"\r\n"
     out += "Server: Single file server (Python)\r\n"
     out += "Connection: close\r\n"
