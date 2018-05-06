@@ -5,6 +5,7 @@ import select
 import sys
 import time
 import os
+import hashlib
 
 # Prep work
 port = int(sys.argv[1])
@@ -232,7 +233,7 @@ def basicHeaders(status, contentType):
 
     # Add cache-control header iff we have caching set
     if caching>0:
-        out+="Cache-Control: public, max-age="+str(caching)+"\r\n"
+        out += "Cache-Control: public, max-age="+str(caching)+"\r\n"
 
     out += "Content-Type: "+contentType+"\r\n"
     return out
@@ -241,6 +242,11 @@ def constructResponse(unendedHeaders, content):
     "Attaches unendedHeaders and content into one HTTP response (adding content-length in the process)"
 
     response =  unendedHeaders
+
+    # Add ETag iff we have caching set
+    if caching>0:
+        response += "ETag: \""+hashlib.sha256(content).hexdigest()+"\"\r\n"
+
     response += "Content-Length: "+str(len(content))+"\r\n\r\n"
     response += content
     return response
