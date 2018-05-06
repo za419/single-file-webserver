@@ -333,6 +333,22 @@ while True:
                 continue
 
             # Serve the file back to the client
+            # If caching is enabled, check for an If-None-Match
+            if caching>0:
+                ETag = ""
+                for line in lines:
+                    if line.startswith("If-None-Match: "):
+                        ETag = line.split("\"")[1]
+
+                # If we have an ETag and it matches our file, return 304 Not Modified
+                if ETag == hashlib.sha256(file).hexdigest():
+                    # ETag matches. Return our basic headers, plus the ETag
+                    read.conn.sendall(basicHeaders("304 Not Modified", type)+"ETag: \""+ETag+"\"\r\n\r\n")
+
+                    # Close the connection and move on.
+                    read.conn.close()
+                    openconn.remove(read.conn)
+
             # If GET, use sendResponse to send the whole file contents
             if method.startswith("GET"):
                 sendResponse("200 OK", type, file, read.conn)
