@@ -348,6 +348,7 @@ while True:
                     # Close the connection and move on.
                     read.conn.close()
                     openconn.remove(read.conn)
+                    continue
 
             # If GET, use sendResponse to send the whole file contents
             if method.startswith("GET"):
