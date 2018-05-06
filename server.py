@@ -13,9 +13,9 @@ file = sys.argv[2]
 if not os.path.isfile(file):
     print "Error: File "+file+" not found."
     sys.exit(127)
-    
+
 file = open(file, 'r', 0)
-    
+
 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
 sock.bind(("", port))
@@ -91,15 +91,57 @@ def generateErrorPage(title, description):
     content += "  </body>\n"
     content += "</html>\n"
     return content
-    
+
 # Class to store an open connection
 class Connection:
     def __init__(self, conn, isAccept=False):
         self.conn = conn
         self.isAccept = isAccept
-        
+
     # For compatibility with select
     def fileno(self):
         return self.conn.fileno()
-        
+
 openconn = []
+
+# Infinite loop to serve connections
+while True:
+    # List of sockets we're waiting to read from
+    # (we do block on writes and local reads... But we don't want to wait on network reads.)
+    r = []
+    # Add all waiting connections
+    for conn in openconn:
+        r.append(Connection(conn))
+    # And also the incoming connection accept socket
+    r.append(Connection(sock, True))
+
+    # Now, select sockets to read from
+    readable, u1, u2 = select.select(r, [], [])
+
+    # And process all those sockets
+    for read in readable:
+        # For the accept socket, accept the connection and add it to the list
+        if read.isAccept:
+            openconn.append(read.conn.accept()[0])
+        else:
+            # Fetch the HTTP request waiting on read
+            request = waitingRequest(read.conn)
+            # Lines of the HTTP request (needed to read the header)
+            lines = request.split("\r\n")
+
+            # The first reqline tells us what we're doing
+            # If it's GET, we return the file specified via commandline
+            # If it's HEAD, we return the headers we'd return for that file
+            # If it's something else, return 400 Bad Request
+            method = lines[0]
+            if not (method.startswith("GET") or method.startswith("HEAD")):
+                # This server can't do anything with these methods.
+                # So just tell the browser it's an invalid request
+                sendResponse("400 Bad Request",
+                             "text/html",
+                             generateErrorPage("400 Bad Request",
+                                               "Your browser sent a request to perform an action the server doesn't recognize."),
+                             read.conn)
+                read.conn.close()
+                openconn.remove(read.conn)
+                continue
