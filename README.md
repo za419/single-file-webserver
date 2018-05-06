@@ -9,3 +9,5 @@ Requires a version2 series python.
 If you wish, you may append a `-c` flag as a third argument to specify that the server should allow the client to cache files. Note that if you do this, the browser will probably not receive new files (if you stop and restart the server with a different file) until the timeout expires.
 
 The timeout can be specified by adding a fourth argument, including an integer number of seconds for a timeout - If you do not include this, the server will default to 3600 (one hour).
+
+Enabling caching adds an ETag in the form of a SHA256 hash of your file to the response. The server will reply with 304 Not Modified if it's being served while caching is enabled.
