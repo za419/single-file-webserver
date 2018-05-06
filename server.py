@@ -259,14 +259,18 @@ class Connection:
     def fileno(self):
         return self.conn.fileno()
 
+# List of open connections
 openconn = []
+# MIME type of the file we're serving
 type = mimeTypeOf(file)
-file = open(file, 'r', 0)
+# Read the file into memory
+with open(file, 'r', 0) as f:
+    file = f.read()
 
 # Infinite loop to serve connections
 while True:
     # List of sockets we're waiting to read from
-    # (we do block on writes and local reads... But we don't want to wait on network reads.)
+    # (we do block on writes... But we don't want to wait on reads.)
     r = []
     # Add all waiting connections
     for conn in openconn:
@@ -304,5 +308,15 @@ while True:
                 read.conn.close()
                 openconn.remove(read.conn)
                 continue
-            
-            
+
+            # Serve the file back to the client
+            # If GET, use sendResponse to send the whole file contents
+            if method.startswith("GET"):
+                sendResponse("200 OK", type, file, read.conn)
+            # If HEAD, generate the same response, but strip the body before send
+            else:
+                read.conn.sendall(constructResponse(basicHeaders("200 OK", type), file).split("\r\n\r\n")[0]+"\r\n\r\n")
+
+            # Close the connection, and move on
+            read.conn.close()
+            openconn.remove(read.conn)
